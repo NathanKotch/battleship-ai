@@ -1,0 +1,179 @@
+:root {
+  --cell: 34px;
+  --gap: 3px;
+  --sea: #0b3d6b;
+  --sea-light: #11518f;
+  --ship: #4a5568;
+  --hit: #e53e3e;
+  --miss: #cbd5e0;
+  --accent: #38b2ac;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* The `hidden` attribute must win over class-based display rules
+   (e.g. `.controls { display: flex }`), which otherwise keep the
+   element visible. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: linear-gradient(160deg, #0a2540, #133b5c);
+  color: #f7fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+header {
+  text-align: center;
+}
+
+h1 {
+  margin: 0.2rem 0;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  margin: 0 0 0.5rem;
+  opacity: 0.8;
+}
+
+.status {
+  min-height: 1.6rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0.75rem 0;
+  color: var(--accent);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+button {
+  background: var(--accent);
+  color: #06242b;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.new-game {
+  margin-bottom: 1rem;
+  background: #f6ad55;
+}
+
+.place-hint {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  color: #f7fafc;
+}
+
+.boards {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.board-wrap h2 {
+  text-align: center;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(10, var(--cell));
+  grid-template-rows: repeat(10, var(--cell));
+  gap: var(--gap);
+  background: #062138;
+  padding: var(--gap);
+  border-radius: 8px;
+}
+
+.cell {
+  width: var(--cell);
+  height: var(--cell);
+  padding: 0;
+  border-radius: 4px;
+  background: var(--sea);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.cell:hover:not(:disabled) {
+  background: var(--sea-light);
+}
+
+.cell.ship {
+  background: var(--ship);
+}
+
+.cell.hit {
+  background: var(--hit);
+}
+
+.cell.miss {
+  background: var(--miss);
+}
+
+footer {
+  margin-top: 1.5rem;
+  opacity: 0.85;
+  font-size: 0.9rem;
+}
+
+.legend {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin: 0 2px 0 8px;
+}
+
+.legend.ship {
+  background: var(--ship);
+}
+.legend.hit {
+  background: var(--hit);
+}
+.legend.miss {
+  background: var(--miss);
+}
+
+@media (max-width: 760px) {
+  :root {
+    --cell: 28px;
+  }
+  .boards {
+    gap: 1rem;
+  }
+}

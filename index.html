@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Battleship — Play vs AI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Battleship</h1>
+      <p class="subtitle">Sink the enemy fleet before they sink yours.</p>
+    </header>
+
+    <main>
+      <div id="status" class="status">Loading…</div>
+
+      <div id="setup-controls" class="controls">
+        <button id="rotate-btn" type="button">Rotate</button>
+        <button id="random-btn" type="button">Random</button>
+        <button id="start-btn" type="button">Start Battle</button>
+        <button id="reset-btn" type="button">Reset</button>
+        <span id="place-hint" class="place-hint"></span>
+      </div>
+
+      <button id="new-game-btn" class="new-game" type="button" hidden>
+        New Game
+      </button>
+
+      <div class="boards">
+        <section class="board-wrap">
+          <h2>Your Fleet</h2>
+          <div id="player-grid" class="grid"></div>
+        </section>
+        <section class="board-wrap">
+          <h2>Enemy Waters</h2>
+          <div id="ai-grid" class="grid"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        Legend:
+        <span class="legend ship"></span> ship
+        <span class="legend hit"></span> hit
+        <span class="legend miss"></span> miss
+      </p>
+    </footer>
+
+    <script type="module" src="src/ui.js"></script>
+  </body>
+</html>
