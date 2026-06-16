@@ -81,6 +81,41 @@ for (let seed = 1; seed <= 200; seed++) {
   check(`seed ${seed} total cells = 17`, totalCells === 17);
 }
 
+// --- AI retains a lead on a second ship after sinking the first ---
+{
+  const ai = new AI(BOARD_SIZE);
+  // Hit ship X at (5,5), then clip a different ship Y at (5,6) — both still afloat.
+  ai.registerResult(5, 5, { hit: true, sunk: null });
+  ai.registerResult(5, 6, { hit: true, sunk: null });
+  check("two open hits tracked", ai.openHits.length === 2);
+  // Sink ship X (cells 5,4 + 5,5) with the finishing shot at (5,4).
+  const shipX = { name: "X", cells: [{ r: 5, c: 4 }, { r: 5, c: 5 }] };
+  ai.registerResult(5, 4, { hit: true, sunk: shipX });
+  // Ship X's hits are cleared; ship Y's hit at (5,6) must remain a live lead.
+  check("sunk ship's hits dropped", ai.openHits.length === 1);
+  check(
+    "second ship's hit retained",
+    ai.openHits[0].r === 5 && ai.openHits[0].c === 6
+  );
+  const follow = ai.nextMove();
+  const adjToY =
+    follow &&
+    Math.abs(follow.r - 5) + Math.abs(follow.c - 6) === 1 &&
+    !(follow.r === 5 && follow.c === 5); // (5,5) already tried
+  check("AI keeps targeting the second ship after a sink", adjToY);
+}
+
+// --- Sinking a fully isolated ship clears the target queue ---
+{
+  const ai = new AI(BOARD_SIZE);
+  ai.registerResult(2, 2, { hit: true, sunk: null });
+  check("queue populated after lone hit", ai.targetQueue.length > 0);
+  const ship = { name: "Solo", cells: [{ r: 2, c: 2 }, { r: 2, c: 3 }] };
+  ai.registerResult(2, 3, { hit: true, sunk: ship });
+  check("queue cleared after isolated sink", ai.targetQueue.length === 0);
+  check("no open hits after isolated sink", ai.openHits.length === 0);
+}
+
 // --- Full simulated games: AI vs random shooter, must terminate with a winner ---
 for (let seed = 1; seed <= 300; seed++) {
   const rng = makeRng(seed * 7 + 3);

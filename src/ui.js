@@ -49,6 +49,7 @@ class Game {
     this.orientation = "horizontal"; // current placement orientation
     this.placeIndex = 0; // which fleet ship the player is placing
     this.busy = false; // locks input while the AI is taking its turn
+    this.resizeTimer = null; // debounces re-rendering on viewport resize
 
     this.cacheDom();
     this.bindEvents();
@@ -74,6 +75,13 @@ class Game {
     this.startBtn.addEventListener("click", () => this.startBattle());
     this.resetBtn.addEventListener("click", () => this.startNewGame());
     this.newGameBtn.addEventListener("click", () => this.startNewGame());
+    // Ship sprites are positioned with absolute pixel offsets, so they must be
+    // recomputed whenever the cell size changes (viewport resize, zoom, or the
+    // mobile breakpoint switching --cell from 34px to 28px).
+    window.addEventListener("resize", () => {
+      clearTimeout(this.resizeTimer);
+      this.resizeTimer = setTimeout(() => this.render(), 100);
+    });
   }
 
   startNewGame() {
@@ -156,6 +164,11 @@ class Game {
   }
 
   aiTurn() {
+    // A turn scheduled before a reset/new game must not fire into the new game.
+    if (this.phase !== Phase.BATTLE) {
+      this.busy = false;
+      return;
+    }
     const move = this.ai.nextMove();
     if (!move) {
       this.busy = false;

@@ -13,6 +13,7 @@ export class AI {
       Array.from({ length: boardSize }, () => false)
     );
     this.targetQueue = []; // cells to try next, as {r, c}
+    this.openHits = []; // hits on ships that are not yet sunk, as {r, c}
   }
 
   inBounds(r, c) {
@@ -47,25 +48,36 @@ export class AI {
     return pool[Math.floor(this.rng() * pool.length)];
   }
 
+  // Orthogonal neighbours of a cell that are on-board and not yet fired at.
+  untriedNeighbours(r, c) {
+    return [
+      { r: r - 1, c },
+      { r: r + 1, c },
+      { r, c: c - 1 },
+      { r, c: c + 1 },
+    ].filter((n) => this.inBounds(n.r, n.c) && !this.tried[n.r][n.c]);
+  }
+
   // Report the outcome of the AI's last shot so it can update its strategy.
   registerResult(r, c, result) {
     this.tried[r][c] = true;
     if (result.hit && !result.sunk) {
-      // Queue orthogonal neighbours to home in on the ship.
-      const neighbours = [
-        { r: r - 1, c },
-        { r: r + 1, c },
-        { r, c: c - 1 },
-        { r, c: c + 1 },
-      ];
-      for (const n of neighbours) {
-        if (this.inBounds(n.r, n.c) && !this.tried[n.r][n.c]) {
-          this.targetQueue.push(n);
-        }
-      }
+      // Record the hit and queue its neighbours to home in on the ship.
+      this.openHits.push({ r, c });
+      this.targetQueue.push(...this.untriedNeighbours(r, c));
     } else if (result.sunk) {
-      // Ship is gone; abandon any leftover targets and resume hunting.
+      // Drop the sunk ship's cells from the open-hit list, then rebuild the
+      // target queue from any hits that belong to *other* damaged ships. This
+      // keeps the AI locked on a second ship it clipped while finishing the
+      // first, instead of discarding that lead and resuming a blind hunt.
+      const sunkCells = result.sunk.cells || [];
+      const isSunkCell = (h) =>
+        sunkCells.some((s) => s.r === h.r && s.c === h.c);
+      this.openHits = this.openHits.filter((h) => !isSunkCell(h));
       this.targetQueue = [];
+      for (const h of this.openHits) {
+        this.targetQueue.push(...this.untriedNeighbours(h.r, h.c));
+      }
     }
   }
 }

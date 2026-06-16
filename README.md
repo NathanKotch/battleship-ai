@@ -30,8 +30,10 @@ The AI lives in [`src/ai.js`](src/ai.js) and has two modes:
   least one parity cell, so this finds ships in roughly half the shots a fully
   random search would need.
 - **Target:** after a hit, it queues the four orthogonally adjacent cells and
-  focuses fire on them to finish off the ship. Once a ship is sunk it drops its
-  leads and goes back to hunting.
+  focuses fire on them to finish off the ship. It tracks every unresolved hit,
+  so when it sinks one ship it keeps targeting any *other* ship it clipped
+  along the way instead of dropping the lead, only returning to hunting once no
+  damaged ships remain.
 
 ## Project structure
 
