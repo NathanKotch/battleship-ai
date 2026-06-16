@@ -134,6 +134,7 @@ button:disabled {
 }
 
 .grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(10, var(--cell));
   grid-template-rows: repeat(10, var(--cell));
@@ -143,7 +144,15 @@ button:disabled {
   border-radius: 8px;
 }
 
+.ship-sprite {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
 .cell {
+  position: relative;
   width: var(--cell);
   height: var(--cell);
   padding: 0;
@@ -157,16 +166,33 @@ button:disabled {
   background: var(--sea-light);
 }
 
+/* Ships are drawn as silhouette sprites overlaid on the grid, so the
+   underlying cell stays sea-colored. */
 .cell.ship {
-  background: var(--ship);
+  background: var(--sea);
 }
 
-.cell.hit {
+/* Hits and misses render as classic pegs that sit above the ship sprite. */
+.cell.hit::after,
+.cell.miss::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46%;
+  height: 46%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.cell.hit::after {
   background: var(--hit);
+  box-shadow: 0 0 6px rgba(229, 62, 62, 0.9);
 }
 
-.cell.miss {
-  background: var(--miss);
+.cell.miss::after {
+  background: #e2e8f0;
 }
 
 footer {
@@ -196,13 +222,16 @@ footer {
 }
 
 .legend.ship {
-  background: var(--ship);
+  background: #6b7689;
+  border: 1px solid #1a202c;
 }
 .legend.hit {
   background: var(--hit);
+  border-radius: 50%;
 }
 .legend.miss {
-  background: var(--miss);
+  background: #e2e8f0;
+  border-radius: 50%;
 }
 
 @media (max-width: 760px) {

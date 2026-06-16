@@ -4,6 +4,42 @@ import { AI } from "./ai.js";
 
 const Phase = { SETUP: "setup", BATTLE: "battle", OVER: "over" };
 
+// Builds a top-down ship silhouette SVG sized to span the ship's cells.
+// `longPx`/`shortPx` are the bounding box's dimensions along/across the hull.
+function shipSvg(longPx, shortPx, horizontal) {
+  // Map normalized (a = along hull 0..1 stern→bow, b = across hull 0..1) to px.
+  const map = (a, b) =>
+    horizontal ? [a * longPx, b * shortPx] : [b * shortPx, (1 - a) * longPx];
+  const poly = (pairs) =>
+    pairs
+      .map(([a, b]) => map(a, b).map((n) => n.toFixed(1)).join(","))
+      .join(" ");
+  const hull = poly([
+    [0.02, 0.3],
+    [0.8, 0.12],
+    [0.99, 0.5],
+    [0.8, 0.88],
+    [0.02, 0.7],
+  ]);
+  const bridge = poly([
+    [0.34, 0.34],
+    [0.5, 0.34],
+    [0.5, 0.66],
+    [0.34, 0.66],
+  ]);
+  const t1 = map(0.18, 0.5);
+  const t2 = map(0.63, 0.5);
+  const r = (0.12 * shortPx).toFixed(1);
+  const w = (horizontal ? longPx : shortPx).toFixed(1);
+  const h = (horizontal ? shortPx : longPx).toFixed(1);
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none">
+    <polygon points="${hull}" fill="#6b7689" stroke="#1a202c" stroke-width="1.2" stroke-linejoin="round" />
+    <polygon points="${bridge}" fill="#2d3748" />
+    <circle cx="${t1[0].toFixed(1)}" cy="${t1[1].toFixed(1)}" r="${r}" fill="#2d3748" />
+    <circle cx="${t2[0].toFixed(1)}" cy="${t2[1].toFixed(1)}" r="${r}" fill="#2d3748" />
+  </svg>`;
+}
+
 class Game {
   constructor() {
     this.playerBoard = new Board(BOARD_SIZE);
@@ -198,6 +234,39 @@ class Game {
         }
         container.appendChild(cell);
       }
+    }
+    if (revealShips) this.renderShipSprites(container, board);
+  }
+
+  // Overlays a ship silhouette across the cells each ship occupies.
+  renderShipSprites(container, board) {
+    for (const ship of board.ships) {
+      const rs = ship.cells.map((p) => p.r);
+      const cs = ship.cells.map((p) => p.c);
+      const r0 = Math.min(...rs);
+      const r1 = Math.max(...rs);
+      const c0 = Math.min(...cs);
+      const c1 = Math.max(...cs);
+      const first = container.children[r0 * board.size + c0];
+      const last = container.children[r1 * board.size + c1];
+      if (!first || !last) continue;
+      const horizontal = r0 === r1;
+      const left = first.offsetLeft;
+      const top = first.offsetTop;
+      const width = last.offsetLeft + last.offsetWidth - left;
+      const height = last.offsetTop + last.offsetHeight - top;
+      const sprite = document.createElement("div");
+      sprite.className = "ship-sprite";
+      sprite.style.left = `${left}px`;
+      sprite.style.top = `${top}px`;
+      sprite.style.width = `${width}px`;
+      sprite.style.height = `${height}px`;
+      sprite.innerHTML = shipSvg(
+        horizontal ? width : height,
+        horizontal ? height : width,
+        horizontal
+      );
+      container.appendChild(sprite);
     }
   }
 }
