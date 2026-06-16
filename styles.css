@@ -98,10 +98,15 @@ button {
   font-weight: 700;
   cursor: pointer;
   font-size: 0.95rem;
+  touch-action: manipulation;
 }
 
-button:hover:not(:disabled) {
-  filter: brightness(1.1);
+/* Only apply hover effects on devices with a real pointer, so taps on
+   touchscreens don't leave buttons/cells stuck in a highlighted state. */
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
 }
 
 button:disabled {
@@ -160,10 +165,13 @@ button:disabled {
   background: var(--sea);
   cursor: pointer;
   transition: background 0.12s;
+  touch-action: manipulation;
 }
 
-.cell:hover:not(:disabled) {
-  background: var(--sea-light);
+@media (hover: hover) {
+  .cell:hover:not(:disabled) {
+    background: var(--sea-light);
+  }
 }
 
 /* Ships are drawn as silhouette sprites overlaid on the grid, so the
@@ -234,11 +242,44 @@ footer {
   border-radius: 50%;
 }
 
+/* Tablet / large phone: shrink cells so both boards fit side by side. */
 @media (max-width: 760px) {
   :root {
     --cell: 28px;
   }
   .boards {
     gap: 1rem;
+  }
+}
+
+/* Phones: stack the boards and size each grid to the viewport width so the
+   whole board is visible without horizontal scrolling. The cell size is
+   derived from 100vw minus the page padding (40px) and the inter-cell gaps
+   (11 * --gap = 33px), capped at 32px. */
+@media (max-width: 560px) {
+  body {
+    padding: 0.5rem;
+  }
+  header {
+    padding: 1rem 1.25rem;
+    width: 100%;
+  }
+  main {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .boards {
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+  }
+  .board-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  :root {
+    --cell: min(32px, calc((100vw - 73px) / 10));
   }
 }
