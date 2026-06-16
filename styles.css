@@ -23,7 +23,12 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: linear-gradient(160deg, #0a2540, #133b5c);
+  /* Darkened WW2 battleship (USS Missouri at sea, 1945) backdrop.
+     The gradient keeps white text and the boards readable. */
+  background:
+    linear-gradient(rgba(6, 18, 32, 0.82), rgba(6, 18, 32, 0.9)),
+    url("assets/battleship-missouri-1945.jpg") center / cover fixed no-repeat,
+    linear-gradient(160deg, #0a2540, #133b5c);
   color: #f7fafc;
   min-height: 100vh;
   display: flex;
@@ -34,6 +39,26 @@ body {
 
 header {
   text-align: center;
+  /* Second WW2 photo (USS New Jersey firing, 1944) as a header banner. */
+  background:
+    linear-gradient(rgba(6, 18, 32, 0.45), rgba(6, 18, 32, 0.8)),
+    url("assets/battleship-newjersey-1944.jpg") center 55% / cover no-repeat;
+  padding: 1.25rem 2.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 178, 172, 0.35);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  margin-bottom: 0.5rem;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(6, 24, 40, 0.55);
+  border-radius: 14px;
+  padding: 1rem 1.5rem 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
 }
 
 h1 {
@@ -148,6 +173,17 @@ footer {
   margin-top: 1.5rem;
   opacity: 0.85;
   font-size: 0.9rem;
+  text-align: center;
+}
+
+.credit {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.credit a {
+  color: inherit;
 }
 
 .legend {
