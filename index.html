@@ -4,11 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Battleship — Play vs AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header>
-      <h1>Battleship</h1>
+      <h1>BATTLESHIP</h1>
       <p class="subtitle">Sink the enemy fleet before they sink yours.</p>
     </header>
 
@@ -28,13 +34,19 @@
       </button>
 
       <div class="boards">
-        <section class="board-wrap">
-          <h2>Your Fleet</h2>
-          <div id="player-grid" class="grid"></div>
+        <section class="board-section">
+          <div class="board-wrap">
+            <h2>Your Fleet</h2>
+            <div id="player-grid" class="grid"></div>
+          </div>
+          <div id="player-tracker" class="fleet-tracker"></div>
         </section>
-        <section class="board-wrap">
-          <h2>Enemy Waters</h2>
-          <div id="ai-grid" class="grid"></div>
+        <section class="board-section">
+          <div class="board-wrap">
+            <h2>Enemy Waters</h2>
+            <div id="ai-grid" class="grid"></div>
+          </div>
+          <div id="ai-tracker" class="fleet-tracker"></div>
         </section>
       </div>
     </main>
@@ -42,7 +54,6 @@
     <footer>
       <p>
         Legend:
-        <span class="legend ship"></span> ship
         <span class="legend hit"></span> hit
         <span class="legend miss"></span> miss
       </p>

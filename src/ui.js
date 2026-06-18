@@ -46,10 +46,10 @@ class Game {
     this.aiBoard = new Board(BOARD_SIZE);
     this.ai = new AI(BOARD_SIZE);
     this.phase = Phase.SETUP;
-    this.orientation = "horizontal"; // current placement orientation
-    this.placeIndex = 0; // which fleet ship the player is placing
-    this.busy = false; // locks input while the AI is taking its turn
-    this.resizeTimer = null; // debounces re-rendering on viewport resize
+    this.orientation = "horizontal";
+    this.placeIndex = 0;
+    this.busy = false;
+    this.resizeTimer = null;
 
     this.cacheDom();
     this.bindEvents();
@@ -67,6 +67,8 @@ class Game {
     this.resetBtn = document.getElementById("reset-btn");
     this.newGameBtn = document.getElementById("new-game-btn");
     this.placeHintEl = document.getElementById("place-hint");
+    this.playerTrackerEl = document.getElementById("player-tracker");
+    this.aiTrackerEl = document.getElementById("ai-tracker");
   }
 
   bindEvents() {
@@ -75,9 +77,6 @@ class Game {
     this.startBtn.addEventListener("click", () => this.startBattle());
     this.resetBtn.addEventListener("click", () => this.startNewGame());
     this.newGameBtn.addEventListener("click", () => this.startNewGame());
-    // Ship sprites are positioned with absolute pixel offsets, so they must be
-    // recomputed whenever the cell size changes (viewport resize, zoom, or the
-    // mobile breakpoint switching --cell from 34px to 28px).
     window.addEventListener("resize", () => {
       clearTimeout(this.resizeTimer);
       this.resizeTimer = setTimeout(() => this.render(), 100);
@@ -107,7 +106,7 @@ class Game {
 
   randomizePlayer() {
     this.playerBoard.placeRandomFleet();
-    this.placeIndex = FLEET.length; // all ships placed
+    this.placeIndex = FLEET.length;
     this.render();
     this.setStatus("Fleet ready. Press Start Battle!");
   }
@@ -158,13 +157,11 @@ class Game {
       this.endGame(true);
       return;
     }
-    // Hand the turn to the AI.
     this.busy = true;
     setTimeout(() => this.aiTurn(), 650);
   }
 
   aiTurn() {
-    // A turn scheduled before a reset/new game must not fire into the new game.
     if (this.phase !== Phase.BATTLE) {
       this.busy = false;
       return;
@@ -213,6 +210,8 @@ class Game {
     );
     this.renderPlaceHint();
     this.startBtn.disabled = this.placeIndex < FLEET.length;
+    this.renderTracker(this.playerTrackerEl, this.playerBoard, "Your Fleet Status");
+    this.renderTracker(this.aiTrackerEl, this.aiBoard, "Enemy Fleet Status");
   }
 
   renderPlaceHint() {
@@ -251,7 +250,6 @@ class Game {
     if (revealShips) this.renderShipSprites(container, board);
   }
 
-  // Overlays a ship silhouette across the cells each ship occupies.
   renderShipSprites(container, board) {
     for (const ship of board.ships) {
       const rs = ship.cells.map((p) => p.r);
@@ -280,6 +278,52 @@ class Game {
         horizontal
       );
       container.appendChild(sprite);
+    }
+  }
+
+  // ---- Fleet Tracker (Scoreboard) ----
+
+  renderTracker(container, board, title) {
+    container.innerHTML = "";
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+    container.appendChild(heading);
+
+    for (const spec of FLEET) {
+      const ship = board.ships.find((s) => s.name === spec.name);
+      const row = document.createElement("div");
+      row.className = "tracker-ship";
+
+      const nameEl = document.createElement("span");
+      nameEl.className = "tracker-name";
+      nameEl.textContent = spec.name;
+
+      const pegsEl = document.createElement("span");
+      pegsEl.className = "tracker-pegs";
+      for (let i = 0; i < spec.size; i++) {
+        const peg = document.createElement("span");
+        peg.className = "tracker-peg";
+        if (ship && ship.hits > i) {
+          peg.classList.add("hit");
+        }
+        pegsEl.appendChild(peg);
+      }
+
+      const statusEl = document.createElement("span");
+      statusEl.className = "tracker-status";
+      if (ship && ship.isSunk()) {
+        statusEl.textContent = "SUNK";
+        statusEl.classList.add("sunk");
+        row.classList.add("sunk");
+      } else {
+        statusEl.textContent = "ACTIVE";
+        statusEl.classList.add("active");
+      }
+
+      row.appendChild(nameEl);
+      row.appendChild(pegsEl);
+      row.appendChild(statusEl);
+      container.appendChild(row);
     }
   }
 }
