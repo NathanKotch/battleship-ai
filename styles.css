@@ -228,6 +228,11 @@ button:disabled {
   background: var(--sea);
 }
 
+.cell.hit,
+.cell.miss {
+  z-index: 4;
+}
+
 /* Classic peg styling — raised cylindrical look */
 .cell.hit::after,
 .cell.miss::after {
