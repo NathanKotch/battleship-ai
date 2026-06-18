@@ -247,7 +247,27 @@ class Game {
         container.appendChild(cell);
       }
     }
-    if (revealShips) this.renderShipSprites(container, board);
+    if (revealShips) {
+      this.renderShipSprites(container, board);
+      this.renderHitOverlays(container, board);
+    }
+  }
+
+  renderHitOverlays(container, board) {
+    for (let r = 0; r < board.size; r++) {
+      for (let c = 0; c < board.size; c++) {
+        if (!board.shots[r][c]) continue;
+        const cellEl = container.children[r * board.size + c];
+        if (!cellEl) continue;
+        const marker = document.createElement("div");
+        marker.className = board.grid[r][c]
+          ? "hit-overlay hit"
+          : "hit-overlay miss";
+        marker.style.left = `${cellEl.offsetLeft + cellEl.offsetWidth / 2}px`;
+        marker.style.top = `${cellEl.offsetTop + cellEl.offsetHeight / 2}px`;
+        container.appendChild(marker);
+      }
+    }
   }
 
   renderShipSprites(container, board) {

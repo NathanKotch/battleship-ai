@@ -259,6 +259,32 @@ button:disabled {
   box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.2);
 }
 
+/* Explicit hit/miss overlays rendered AFTER ship sprites to guarantee visibility */
+.hit-overlay {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hit-overlay.hit {
+  background: radial-gradient(circle at 35% 35%, #ff6659, var(--hit));
+  box-shadow:
+    0 0 10px var(--hit-glow),
+    0 0 20px rgba(211, 47, 47, 0.4),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.3);
+}
+
+.hit-overlay.miss {
+  background: radial-gradient(circle at 35% 35%, #fff, #ccc);
+  box-shadow:
+    0 0 6px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.2);
+}
+
 /* ===== Fleet Tracker (scoreboard) ===== */
 .fleet-tracker {
   margin-top: 0.75rem;
