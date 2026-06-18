@@ -4,39 +4,84 @@ import { AI } from "./ai.js";
 
 const Phase = { SETUP: "setup", BATTLE: "battle", OVER: "over" };
 
+// Column labels for accessibility.
+const COL_LABELS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+
+// Ship-specific silhouette definitions (normalized coordinates).
+const SHIP_SHAPES = {
+  Carrier: {
+    hull: [[0.01, 0.25], [0.85, 0.15], [0.99, 0.5], [0.85, 0.85], [0.01, 0.75]],
+    details: (map, shortPx) => {
+      const deck = [[0.15, 0.32], [0.78, 0.32], [0.78, 0.68], [0.15, 0.68]];
+      const r = (0.07 * shortPx).toFixed(1);
+      const spots = [0.25, 0.4, 0.55, 0.7].map((a) => map(a, 0.5));
+      let svg = `<polygon points="${polyStr(deck, map)}" fill="#3d4a5c" opacity="0.6" />`;
+      for (const s of spots) {
+        svg += `<circle cx="${s[0].toFixed(1)}" cy="${s[1].toFixed(1)}" r="${r}" fill="#2d3748" />`;
+      }
+      return svg;
+    },
+  },
+  Battleship: {
+    hull: [[0.02, 0.28], [0.82, 0.1], [0.99, 0.5], [0.82, 0.9], [0.02, 0.72]],
+    details: (map, shortPx) => {
+      const bridge = [[0.38, 0.3], [0.55, 0.3], [0.55, 0.7], [0.38, 0.7]];
+      const r = (0.13 * shortPx).toFixed(1);
+      const t1 = map(0.2, 0.5);
+      const t2 = map(0.68, 0.5);
+      return `<polygon points="${polyStr(bridge, map)}" fill="#2d3748" />
+        <circle cx="${t1[0].toFixed(1)}" cy="${t1[1].toFixed(1)}" r="${r}" fill="#2d3748" />
+        <circle cx="${t2[0].toFixed(1)}" cy="${t2[1].toFixed(1)}" r="${r}" fill="#2d3748" />`;
+    },
+  },
+  Cruiser: {
+    hull: [[0.03, 0.32], [0.84, 0.15], [0.99, 0.5], [0.84, 0.85], [0.03, 0.68]],
+    details: (map, shortPx) => {
+      const bridge = [[0.4, 0.35], [0.55, 0.35], [0.55, 0.65], [0.4, 0.65]];
+      const r = (0.11 * shortPx).toFixed(1);
+      const t1 = map(0.22, 0.5);
+      return `<polygon points="${polyStr(bridge, map)}" fill="#2d3748" />
+        <circle cx="${t1[0].toFixed(1)}" cy="${t1[1].toFixed(1)}" r="${r}" fill="#2d3748" />`;
+    },
+  },
+  Submarine: {
+    hull: [[0.04, 0.38], [0.5, 0.2], [0.96, 0.38], [0.96, 0.62], [0.5, 0.8], [0.04, 0.62]],
+    details: (map, shortPx) => {
+      const tower = [[0.4, 0.25], [0.55, 0.25], [0.55, 0.45], [0.4, 0.45]];
+      const r = (0.06 * shortPx).toFixed(1);
+      const periscope = map(0.48, 0.18);
+      return `<polygon points="${polyStr(tower, map)}" fill="#2d3748" />
+        <circle cx="${periscope[0].toFixed(1)}" cy="${periscope[1].toFixed(1)}" r="${r}" fill="#1a202c" />`;
+    },
+  },
+  Destroyer: {
+    hull: [[0.03, 0.3], [0.8, 0.12], [0.99, 0.5], [0.8, 0.88], [0.03, 0.7]],
+    details: (map, shortPx) => {
+      const r = (0.1 * shortPx).toFixed(1);
+      const t1 = map(0.35, 0.5);
+      return `<circle cx="${t1[0].toFixed(1)}" cy="${t1[1].toFixed(1)}" r="${r}" fill="#2d3748" />`;
+    },
+  },
+};
+
+function polyStr(pairs, map) {
+  return pairs.map(([a, b]) => map(a, b).map((n) => n.toFixed(1)).join(",")).join(" ");
+}
+
 // Builds a top-down ship silhouette SVG sized to span the ship's cells.
-// `longPx`/`shortPx` are the bounding box's dimensions along/across the hull.
-function shipSvg(longPx, shortPx, horizontal) {
-  // Map normalized (a = along hull 0..1 stern→bow, b = across hull 0..1) to px.
+function shipSvg(longPx, shortPx, horizontal, shipName) {
   const map = (a, b) =>
     horizontal ? [a * longPx, b * shortPx] : [b * shortPx, (1 - a) * longPx];
-  const poly = (pairs) =>
-    pairs
-      .map(([a, b]) => map(a, b).map((n) => n.toFixed(1)).join(","))
-      .join(" ");
-  const hull = poly([
-    [0.02, 0.3],
-    [0.8, 0.12],
-    [0.99, 0.5],
-    [0.8, 0.88],
-    [0.02, 0.7],
-  ]);
-  const bridge = poly([
-    [0.34, 0.34],
-    [0.5, 0.34],
-    [0.5, 0.66],
-    [0.34, 0.66],
-  ]);
-  const t1 = map(0.18, 0.5);
-  const t2 = map(0.63, 0.5);
-  const r = (0.12 * shortPx).toFixed(1);
+  const shape = SHIP_SHAPES[shipName] || SHIP_SHAPES.Destroyer;
+  const hull = shape.hull
+    .map(([a, b]) => map(a, b).map((n) => n.toFixed(1)).join(","))
+    .join(" ");
+  const details = shape.details(map, shortPx);
   const w = (horizontal ? longPx : shortPx).toFixed(1);
   const h = (horizontal ? shortPx : longPx).toFixed(1);
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none">
     <polygon points="${hull}" fill="#6b7689" stroke="#1a202c" stroke-width="1.2" stroke-linejoin="round" />
-    <polygon points="${bridge}" fill="#2d3748" />
-    <circle cx="${t1[0].toFixed(1)}" cy="${t1[1].toFixed(1)}" r="${r}" fill="#2d3748" />
-    <circle cx="${t2[0].toFixed(1)}" cy="${t2[1].toFixed(1)}" r="${r}" fill="#2d3748" />
+    ${details}
   </svg>`;
 }
 
@@ -81,6 +126,33 @@ class Game {
       clearTimeout(this.resizeTimer);
       this.resizeTimer = setTimeout(() => this.render(), 100);
     });
+    // Keyboard arrow-key navigation within grids.
+    document.addEventListener("keydown", (e) => this.handleGridNav(e));
+  }
+
+  handleGridNav(e) {
+    const active = document.activeElement;
+    if (!active || !active.classList.contains("cell")) return;
+    const grid = active.parentElement;
+    if (!grid || !grid.classList.contains("grid")) return;
+    const cells = Array.from(grid.querySelectorAll(".cell"));
+    const idx = cells.indexOf(active);
+    if (idx < 0) return;
+    const size = BOARD_SIZE;
+    const row = Math.floor(idx / size);
+    const col = idx % size;
+    let next = -1;
+    switch (e.key) {
+      case "ArrowUp": next = (row > 0) ? (row - 1) * size + col : -1; break;
+      case "ArrowDown": next = (row < size - 1) ? (row + 1) * size + col : -1; break;
+      case "ArrowLeft": next = (col > 0) ? row * size + (col - 1) : -1; break;
+      case "ArrowRight": next = (col < size - 1) ? row * size + (col + 1) : -1; break;
+      default: return;
+    }
+    if (next >= 0 && cells[next]) {
+      e.preventDefault();
+      cells[next].focus();
+    }
   }
 
   startNewGame() {
@@ -229,6 +301,11 @@ class Game {
 
   renderBoard(container, board, revealShips, onCellClick) {
     container.innerHTML = "";
+    if (revealShips) {
+      container.classList.add("has-overlays");
+    } else {
+      container.classList.remove("has-overlays");
+    }
     for (let r = 0; r < board.size; r++) {
       for (let c = 0; c < board.size; c++) {
         const cell = document.createElement("button");
@@ -236,6 +313,10 @@ class Game {
         cell.type = "button";
         const state = board.cellState(r, c, revealShips);
         cell.classList.add(state);
+
+        // Accessibility: aria-label with grid coordinate and state.
+        const label = `${COL_LABELS[c]}${r + 1}: ${state}`;
+        cell.setAttribute("aria-label", label);
 
         if (onCellClick && this.phase === Phase.BATTLE) {
           cell.addEventListener("click", () => onCellClick(r, c));
@@ -295,7 +376,8 @@ class Game {
       sprite.innerHTML = shipSvg(
         horizontal ? width : height,
         horizontal ? height : width,
-        horizontal
+        horizontal,
+        ship.name
       );
       container.appendChild(sprite);
     }
